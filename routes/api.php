@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\RekeningAdminController;
+use App\Http\Controllers\TransaksiTransferController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,21 +18,21 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
-    Route::post('register', 'AuthController@register');
-    Route::post('login', 'AuthController@login');
-    Route::post('logout', 'AuthController@logout');
-    Route::post('refresh', 'AuthController@refresh');
-    Route::post('me', 'AuthController@me');
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('update-token', [AuthController::class, 'updateToken']);
+    Route::post('me', [AuthController::class, 'me']);
 });
 
-Route::group(['middleware' => 'auth:api', 'controller' => 'TransaksiTransferController'], function() {
+Route::group(['middleware' => 'auth:api', 'controller' => TransaksiTransferController::class], function() {
     Route::group(['middleware' => 'auth:api', 'prefix' => 'transfer'], function() {
         Route::get('/', 'getAll');
         Route::post('/', 'transfer');
     });
 });
 
-Route::group(['middleware' => 'auth:api', 'controller' => 'BankController'], function() {
+Route::group(['middleware' => 'auth:api', 'controller' => BankController::class], function() {
     Route::group(['middleware' => 'auth:api', 'prefix' => 'bank'], function() {
         Route::get('/', 'getAll');
         Route::post('/', 'insert');
@@ -37,7 +41,7 @@ Route::group(['middleware' => 'auth:api', 'controller' => 'BankController'], fun
     });
 });
 
-Route::group(['middleware' => 'auth:api', 'controller' => 'RekeningAdminController'], function() {
+Route::group(['middleware' => 'auth:api', 'controller' => RekeningAdminController::class], function() {
     Route::group(['middleware' => 'auth:api', 'prefix' => 'rekening-admin'], function() {
         Route::get('/', 'getAll');
         Route::post('/', 'insert');

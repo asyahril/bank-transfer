@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Hash;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Validator;
 
 class AuthController extends Controller
 {
@@ -18,22 +19,47 @@ class AuthController extends Controller
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
-    public function register(Request $request){
-        $request->validate([
+    public function register(Request $request) 
+    {
+        $ok = true;
+        $input = $request->all();
+        $message = '';
+
+        $validator = Validator::make($input, [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        if ($validator->fails()) {
+            $errorList = $validator->errors()->toArray();
+            $message = '';
+
+            foreach ($errorList as $field => $value) {
+                $message .= sprintf("%s: %s", $field, $value[0]);
+            }
+
+            $ok = false;
+        }
+
+        if ($ok) {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+
+            if (!$user) {
+                $ok = false;
+                $message = 'Failed to create user!';
+            } else {
+                $message = 'User created successfully';
+            }
+        }
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'User created successfully',
+            'success' => $ok,
+            'message' => $message,
         ]);
     }
 
@@ -46,7 +72,13 @@ class AuthController extends Controller
     {
         $credentials = request(['email', 'password']);
 
-        if (! $token = auth()->attempt($credentials)) {
+        if (!isset($credentials['email'])) {
+            $credentials['email'] = request('username');
+        }
+
+        $token = auth()->attempt($credentials);
+
+        if (!$token) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -80,7 +112,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function refresh()
+    public function updateToken()
     {
         return $this->respondWithToken(auth()->refresh());
     }
@@ -95,9 +127,8 @@ class AuthController extends Controller
     protected function respondWithToken($token)
     {
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'accessToken' => $token,
+            'refreshToken' => Hash::make($token)
         ]);
     }
 
