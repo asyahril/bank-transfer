@@ -116,9 +116,9 @@ class AuthController extends Controller
     public function updateToken()
     {
         $refreshToken = request(request('token'));
-        $user = User::where('remember_token', $refreshToken)->first();
+        $user = auth()->user();
 
-        if (!isset($user)) {
+        if (isset($user) && $user->remember_token == $refreshToken) {
             return $this->respondWithToken(auth()->refresh());
         } else {
             return response()->json(['error' => 'Invalid refresh token'], 400);
