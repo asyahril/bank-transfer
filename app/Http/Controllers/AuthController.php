@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Hash;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Str;
 use Validator;
 
 class AuthController extends Controller
@@ -114,7 +115,14 @@ class AuthController extends Controller
      */
     public function updateToken()
     {
-        return $this->respondWithToken(auth()->refresh());
+        $refreshToken = request(request('token'));
+        $user = User::where('remember_token', $refreshToken)->first();
+
+        if (!isset($user)) {
+            return $this->respondWithToken(auth()->refresh());
+        } else {
+            return response()->json(['error' => 'Invalid refresh token'], 400);
+        }
     }
 
     /**
@@ -128,8 +136,18 @@ class AuthController extends Controller
     {
         return response()->json([
             'accessToken' => $token,
-            'refreshToken' => Hash::make($token)
+            'refreshToken' => $this->createRefreshToken(auth()->user())
         ]);
+    }
+
+    protected function createRefreshToken($user)
+    {
+        $refreshToken = Str::random(60);
+
+        $user->remember_token = $refreshToken;
+        $user->save();
+
+        return $refreshToken;
     }
 
 }
