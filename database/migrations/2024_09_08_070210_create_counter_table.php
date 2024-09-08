@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rekening_admin', function (Blueprint $table) {
-            $table->string('bank', 20)->primary();
-            $table->string('rekening', 30);
-            $table->string('atasnama', 30);
+        Schema::create('counter', function (Blueprint $table) {
+            $table->string('prefix', 20)->primary();
+            $table->integer('value');
             $table->timestamps();
         });
     }
@@ -24,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rekening_admin');
+        Schema::dropIfExists('counter');
     }
 };

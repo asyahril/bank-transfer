@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bank', function (Blueprint $table) {
-            $table->string('kode_bank', 5)->primary();
-            $table->string('nama_bank', 20);
+            $table->string('bank', 20)->primary();
+            $table->integer('biaya_admin');
             $table->timestamps();
         });
     }

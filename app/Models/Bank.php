@@ -9,5 +9,10 @@ class Bank extends Model
 {
     use HasFactory;
     protected $table = 'bank';
-    protected $primaryKey = 'kode_bank';
+    protected $primaryKey = 'bank';
+
+    public static function primaryKey()
+    {
+        return (new static())->primaryKey;
+    }
 }

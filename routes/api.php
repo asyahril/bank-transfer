@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +13,35 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
+    Route::post('register', 'AuthController@register');
+    Route::post('login', 'AuthController@login');
+    Route::post('logout', 'AuthController@logout');
+    Route::post('refresh', 'AuthController@refresh');
+    Route::post('me', 'AuthController@me');
+});
+
+Route::group(['middleware' => 'auth:api', 'controller' => 'TransaksiTransferController'], function() {
+    Route::group(['middleware' => 'auth:api', 'prefix' => 'transfer'], function() {
+        Route::get('/', 'getAll');
+        Route::post('/', 'transfer');
+    });
+});
+
+Route::group(['middleware' => 'auth:api', 'controller' => 'BankController'], function() {
+    Route::group(['middleware' => 'auth:api', 'prefix' => 'bank'], function() {
+        Route::get('/', 'getAll');
+        Route::post('/', 'insert');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'delete');
+    });
+});
+
+Route::group(['middleware' => 'auth:api', 'controller' => 'RekeningAdminController'], function() {
+    Route::group(['middleware' => 'auth:api', 'prefix' => 'rekening-admin'], function() {
+        Route::get('/', 'getAll');
+        Route::post('/', 'insert');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'delete');
+    });
 });

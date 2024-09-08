@@ -10,4 +10,9 @@ class RekeningAdmin extends Model
     use HasFactory;
     protected $table = 'rekening_admin';
     protected $primaryKey = 'bank';
+
+    public static function primaryKey()
+    {
+        return (new static())->primaryKey;
+    }
 }

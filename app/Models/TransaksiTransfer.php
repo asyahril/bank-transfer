@@ -10,4 +10,9 @@ class TransaksiTransfer extends Model
     use HasFactory;
     protected $table = 'transaksi_transfer';
     protected $primaryKey = 'id_transaksi';
+
+    public static function primaryKey()
+    {
+        return (new static())->primaryKey;
+    }
 }
