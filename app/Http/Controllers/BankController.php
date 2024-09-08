@@ -71,8 +71,8 @@ class BankController extends Controller
     private function validateInput($input, &$ok)
     {
         $validator = Validator::make($input, [
-            'kode_bank' => 'required|max:20',
-            'nama_bank' => 'required|max:30'
+            'bank' => 'required|max:20',
+            'biaya_admin' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
