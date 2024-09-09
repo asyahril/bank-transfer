@@ -73,6 +73,11 @@ class TransaksiTransferController extends Controller
 
             if ($ok) {
                 DB::commit();
+
+                unset($input['bank_tujuan']);
+                unset($input['rekening_tujuan']);
+                unset($input['atasnama_tujuan']);
+
                 $result = $input;
             } else {
                 DB::rollBack();
