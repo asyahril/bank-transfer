@@ -32,7 +32,7 @@ class TransaksiTransferController extends Controller
         $rekeningAdmin = null;
 
         if ($ok) {
-            $rekeningAdmin = RekeningAdmin::where('bank', $input['bank_pengirim'])->first();
+            $rekeningAdmin = RekeningAdmin::where('bank', $input['bank_pengirim'])->first()?->toArray();
 
             if (!isset($rekeningAdmin)) {
                 $ok = false;
@@ -44,13 +44,13 @@ class TransaksiTransferController extends Controller
         $adminCost = 0;
 
         if ($ok && $input['bank_pengirim'] != $input['bank_tujuan']) {
-            $bank = Bank::where('bank', $input['bank_pengirim'])->first();
+            $bank = Bank::where('bank', $input['bank_pengirim'])->first()?->toArray();
 
             if (!isset($bank)) {
                 $ok = false;
                 $result['message'] = sprintf('Bank tidak tersedia: %s', $input['bank_pengirim']);
             } else {
-                $adminCost = $bank->biaya_admin;
+                $adminCost = $bank['biaya_admin'];
             }
         }
 
@@ -61,8 +61,9 @@ class TransaksiTransferController extends Controller
             $input['id_transaksi'] = $this->generateId();
             $input['kode_unik'] = $this->generateUniqueCode();
             $input['biaya_admin'] = $adminCost;
-            $input['bank_perantara'] = $rekeningAdmin->bank;
-            $input['rekening_perantara'] = $rekeningAdmin->rekening;
+            $input['total_transfer'] = $input['nilai_transfer'] + $input['kode_unik'] + $input['biaya_admin'];
+            $input['bank_perantara'] = $rekeningAdmin['bank'];
+            $input['rekening_perantara'] = $rekeningAdmin['rekening'];
             $input['berlaku_hingga'] = date('Y-m-d H:i:s', strtotime('+3 day', time()));
 
             if (!TransaksiTransfer::insert($input)) {
@@ -72,6 +73,7 @@ class TransaksiTransferController extends Controller
 
             if ($ok) {
                 DB::commit();
+                $result = $input;
             } else {
                 DB::rollBack();
             }    
@@ -83,6 +85,7 @@ class TransaksiTransferController extends Controller
 
     private function validateInput($input, &$ok)
     {
+        $result = [];
         $validator = Validator::make($input, [
             'nilai_transfer' => 'required|integer',
             'bank_tujuan' => 'required|max:20',

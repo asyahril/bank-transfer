@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Hash;
 use Illuminate\Http\Request;
 use App\Models\User;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 use Str;
 use Validator;
 
@@ -17,7 +18,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'updateToken', 'register']]);
     }
 
     public function register(Request $request) 
@@ -83,7 +84,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        return $this->respondWithToken($token);
+        return $this->respondWithToken($token, auth()->user());
     }
 
     /**
@@ -115,11 +116,13 @@ class AuthController extends Controller
      */
     public function updateToken()
     {
-        $refreshToken = request(request('token'));
-        $user = auth()->user();
+        $refreshToken = request('token');
+        $user = User::where('remember_token', $refreshToken)->first();
 
-        if (isset($user) && $user->remember_token == $refreshToken) {
-            return $this->respondWithToken(auth()->refresh());
+        if (isset($user)) {
+            $token = JWTAuth::fromUser($user);
+
+            return $this->respondWithToken($token, $user);
         } else {
             return response()->json(['error' => 'Invalid refresh token'], 400);
         }
@@ -132,22 +135,26 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function respondWithToken($token)
+    protected function respondWithToken($token, $user)
     {
         return response()->json([
             'accessToken' => $token,
-            'refreshToken' => $this->createRefreshToken(auth()->user())
+            'refreshToken' => $this->getRefreshToken($user)
         ]);
     }
 
-    protected function createRefreshToken($user)
+    protected function getRefreshToken($user)
     {
-        $refreshToken = Str::random(60);
+        if (!isset($user->remember_token)) {
+            $refreshToken = Str::random(60);
 
-        $user->remember_token = $refreshToken;
-        $user->save();
-
-        return $refreshToken;
+            $user->remember_token = $refreshToken;
+            $user->save();
+    
+            return $refreshToken;
+        } else {
+            return $user->remember_token;
+        }
     }
 
 }

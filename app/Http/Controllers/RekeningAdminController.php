@@ -70,6 +70,7 @@ class RekeningAdminController extends Controller
 
     private function validateInput($input, &$ok)
     {
+        $result = [];
         $validator = Validator::make($input, [
             'bank' => 'required|max:20',
             'rekening' => 'required|max:30',

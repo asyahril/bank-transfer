@@ -24,7 +24,6 @@ return new class extends Migration
             $table->string('bank_perantara', 20);
             $table->string('rekening_perantara', 30);
             $table->dateTime('berlaku_hingga');
-            $table->timestamps();
         });
     }
 

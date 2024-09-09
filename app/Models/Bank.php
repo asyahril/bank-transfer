@@ -10,6 +10,8 @@ class Bank extends Model
     use HasFactory;
     protected $table = 'bank';
     protected $primaryKey = 'bank';
+    public $incrementing = false;
+
 
     public static function primaryKey()
     {

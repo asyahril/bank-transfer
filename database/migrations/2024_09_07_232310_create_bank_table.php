@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('bank', function (Blueprint $table) {
             $table->string('bank', 20)->primary();
             $table->integer('biaya_admin');
-            $table->timestamps();
         });
     }
 

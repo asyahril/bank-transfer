@@ -15,7 +15,6 @@ return new class extends Migration
             $table->string('bank', 20)->primary();
             $table->string('rekening', 30);
             $table->string('atasnama', 30);
-            $table->timestamps();
         });
     }
 
